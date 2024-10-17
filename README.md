@@ -124,6 +124,8 @@ Follow the steps below to set up **IteraMindAI** on your local machine:
    - Visit **http://localhost:3000** for the Grafana dashboard.
    - Use **Prometheus** to track metrics in real time.
 
+## **Contributing**
+We welcome contributions from the community! Please follow the steps in our [CONTRIBUTING](CONTRIBUTING.md) file to get started.
 
 ## **License**
 This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
