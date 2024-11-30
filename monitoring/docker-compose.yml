@@ -1,13 +1,8 @@
-version: '3.8'
 services:
-  prometheus:
-    image: prom/prometheus:latest
+  python_llm:
+    build:
+      context: ./integration-python
     ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
+      - "5000:5000"
+    environment:
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}

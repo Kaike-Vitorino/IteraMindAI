@@ -1,30 +1,49 @@
 package main
 
 import (
-	"context"
+	"backend-go/internal"
 	"fmt"
-	"github.com/redis/go-redis/v9"
-	"log"
-	"os/exec"
 )
 
 func main() {
-	ctx := context.Background()
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
+	prompt := "Escreva uma função Python que calcula a média de uma lista."
+	maxIterations := 5
+	var currentCode string
+	var feedback string
 
-	err := rdb.Set(ctx, "key", "IteraMindAI", 0).Err()
-	if err != nil {
-		log.Fatalf("Could not set key in Redis: %v", err)
+	for i := 0; i < maxIterations; i++ {
+		fmt.Printf("Iteração %d\n", i+1)
+
+		if i == 0 {
+			// Geração inicial de código
+			response, err := internal.GetInferenceFromPython("generate", map[string]string{"prompt": prompt})
+			if err != nil {
+				fmt.Println("Erro ao gerar código:", err)
+				break
+			}
+			currentCode = response
+			fmt.Println("Código gerado:", currentCode)
+		} else {
+			// Obter feedback sobre o código atual
+			response, err := internal.GetInferenceFromPython("criticize", map[string]string{"code": currentCode})
+			if err != nil {
+				fmt.Println("Erro ao criticar código:", err)
+				break
+			}
+			feedback = response
+			fmt.Println("Feedback recebido:", feedback)
+
+			// Integrar feedback ao código
+			response, err = internal.GetInferenceFromPython("integrate", map[string]string{"code": currentCode, "feedback": feedback})
+			if err != nil {
+				fmt.Println("Erro ao integrar feedback:", err)
+				break
+			}
+			currentCode = response
+			fmt.Println("Código melhorado:", currentCode)
+		}
 	}
 
-	output, err := exec.Command("/mnt/f/Dev_Faculdade/IteraMindAI/core-rust/target/debug/iteramind_core").Output()
-	if err != nil {
-		log.Fatalf("Error executing Rust core: %v", err)
-	}
-
-	fmt.Printf("Output from Rust Core: %s\n", output)
+	fmt.Println("Processo finalizado. Código final:")
+	fmt.Println(currentCode)
 }
