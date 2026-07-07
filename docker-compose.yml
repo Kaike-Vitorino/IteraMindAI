@@ -1,0 +1,16 @@
+# One-command local run of the IteraMindAI web app.
+#   docker compose up --build
+# Then open http://localhost:7860
+services:
+  iteramind:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      # All optional — the app runs with the keyless "mock" provider by default.
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+    restart: unless-stopped
