@@ -1,139 +1,148 @@
+---
+title: IteraMindAI
+emoji: 🧠
+colorFrom: purple
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
 
+# IteraMindAI
 
-![Placeholder](./assets/placeholder.jpg)
+**Iterative, multi-provider reasoning engine.** Instead of trusting a single LLM
+call, IteraMindAI refines a task across rounds with three cooperating agents —
+**Generator → Critic → Integrator** — backed by a pluggable provider layer that
+speaks to **Google Gemini, OpenAI, Anthropic, OpenRouter, Groq**, or a keyless
+**offline Mock** so the demo runs with zero configuration.
 
-# **IteraMindAI**
+![IteraMindAI](./assets/placeholder.jpg)
 
-Welcome to **IteraMindAI** – a modular, high-performance AI system designed to simulate **iterative reasoning and intelligent task management**. This framework integrates **Google Gemini API**, **Rust**, **Go**, and **Python** to create a powerful system capable of managing complex tasks through continuous refinement and agent orchestration.
+<p>
+  <img alt="CI" src="https://github.com/Kaike-Vitorino/IteraMindAI/actions/workflows/ci.yml/badge.svg" />
+  <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue" />
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-green" />
+</p>
 
 ---
 
-## **Project Overview**
+## Why it exists
 
-**IteraMindAI** is built with the goal of achieving **efficient task decomposition, iterative learning, and real-time monitoring**. The system leverages API-driven AI models (Google Gemini), breaking larger tasks into manageable subtasks and iteratively refining solutions through a structured process.
+A one-shot answer is rarely the best answer. IteraMindAI models the way people
+actually improve work — draft, critique, revise — as an explicit loop you can
+watch happen live:
 
-Each module is implemented in the language best suited for its purpose:
+1. **Generator** writes an initial solution.
+2. **Critic** finds concrete issues (correctness, edge cases, robustness, clarity)
+   and returns a verdict.
+3. **Integrator** rewrites the solution addressing every point.
+4. Repeat until the critic approves or the iteration budget runs out.
 
-- **Google Gemini API**: Provides state-of-the-art generative and analytical capabilities for agent operations.
-- **Go**: Backend orchestration for managing iterative workflows and coordinating agent interactions.
-- **Python**: API integration and logic for task-specific agents (generation, critique, and integration).
-- **Redis**: Enables caching and state management for iterative workflows.
+Every step streams to the browser over Server-Sent Events, so you see the
+reasoning unfold round by round.
 
----
+## Supported providers
 
-## **Features**
+| Provider   | Key env var             | Default model             |
+|------------|-------------------------|---------------------------|
+| **mock**   | *none* (offline)        | `mock-1`                  |
+| gemini     | `GOOGLE_GEMINI_API_KEY` | `gemini-1.5-flash-latest` |
+| openai     | `OPENAI_API_KEY`        | `gpt-4o-mini`             |
+| anthropic  | `ANTHROPIC_API_KEY`     | `claude-3-5-haiku-latest` |
+| openrouter | `OPENROUTER_API_KEY`    | `openai/gpt-4o-mini`      |
+| groq       | `GROQ_API_KEY`          | `llama-3.3-70b-versatile` |
 
-- **Iterative Orchestration**: Coordinates multiple agents (generation, critique, integration) for task refinement.
-- **Google Gemini Integration**: Replaces local model hosting with API-based AI services, ensuring scalability and robustness.
-- **Task Decomposition and Refinement**: Dynamically breaks down and refines complex tasks.
-- **Agent-Based Architecture**: Specialized agents (Python) handle different aspects of the workflow.
-- **Monitoring and Visualization**: Real-time dashboards using **Prometheus** and **Grafana**.
-- **State Management**: Redis for short and long-term memory of iterative processes.
+Keys can be set as environment variables **or** pasted per-request in the UI
+(never stored server-side).
 
----
+## Quickstart
 
-## **Tech Stack**
-
-- **Google Gemini API**: Core AI service for generation, analysis, and integration.
-- **Go**: Backend service for task orchestration and monitoring.
-- **Python**: Agent logic and API integration.
-- **Redis**: In-memory storage for efficient data caching and state management.
-- **Prometheus & Grafana**: Tools for monitoring system performance and metrics.
-
----
-
-## **Repository Structure**
-```plaintext
-/IteraMindAI
-│
-├── /backend-go                 # Backend and orchestration (Go)
-│   ├── /cmd                    # Entry points
-│   ├── /internal               # Task management logic
-│   ├── /pkg                    # Utility packages
-│   └── go.mod                  # Go dependencies
-│
-├── /integration-python         # Python-based agents for API integration
-│   ├── gemini_integration.py   # Handles Google Gemini API interactions
-│   ├── agents                  # Agent scripts (generate, criticize, integrate)
-│   └── requirements.txt        # Python dependencies
-│
-├── /monitoring                 # Monitoring setup (Prometheus & Grafana)
-│   └── docker-compose.yml      # Docker orchestration for monitoring tools
-│
-├── /assets                     # Images and placeholders
-│   └── placeholder.jpg         # Project logo or visual
-│
-├── /docs                       # Documentation
-├── .gitignore                  # Git ignore file
-├── LICENSE                     # License information
-├── README.md                   # This README file
-└── CONTRIBUTING.md             # Contribution guidelines
-```
-
----
-
-## **Installation**
-
-Follow the steps below to set up **IteraMindAI** on your local machine:
-
-### **Clone the Repository**
 ```bash
-git clone https://github.com/your-username/IteraMindAI.git
-cd IteraMindAI
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 7860
 ```
 
-### **Set Up the Environments**
+Open <http://localhost:7860>. Select **Mock** and run — no keys required. Full
+setup notes: [docs/setup.md](docs/setup.md).
 
-- **Python Agents**:
-  ```bash
-  cd integration-python
-  python3 -m venv venv
-  source venv/bin/activate  # On Windows: venv\Scripts\activate
-  pip install -r requirements.txt
-  ```
+## Deploy
 
-- **Go Backend**:
-  ```bash
-  cd backend-go
-  go mod tidy
-  go build
-  ```
+### Hugging Face Spaces (Docker) — easiest
 
-## **Usage**
+1. Create a new Space → **SDK: Docker**.
+2. Push this repository to it (the `Dockerfile` and the README front matter above
+   are all HF needs; the app is served on port `7860`).
+3. *(Optional)* add provider keys under **Settings → Variables and secrets**
+   (`GROQ_API_KEY`, `OPENAI_API_KEY`, …). Without any keys the Mock provider
+   keeps the Space fully functional.
 
-1. **Launch the Python Agents**:
-    - **Start the Agents (Generate, Criticize, Integrate)**:
-      ```bash
-      cd integration-python
-      python python gemini_integration.py
-      ```
+### Vercel
 
-2. **Launch the Go Backend Orchestrator**:
+The repo ships an `api/index.py` ASGI entry and `vercel.json`:
 
-   Modify prompt := "Example" on main.go
-   ```bash
-   cd backend-go/cmd
-   go run main.go
-   ```
+```bash
+npm i -g vercel
+vercel            # preview
+vercel --prod     # production
+```
 
----
+Add provider keys in **Project → Settings → Environment Variables**.
 
-## **Configuration**
+### Docker / Railway / Render / Fly.io
 
-1. **Google Gemini API Key**:
-    - Add your API key in `integration-python/config.py`:
-      ```python
-      API_KEY = "your_google_gemini_api_key"
-      ```
+```bash
+docker compose up --build        # -> http://localhost:7860
+```
 
-2. **Environment Variables**:
-    - Create a `.env` file in the root directory and include:
-      ```plaintext
-      GOOGLE_GEMINI_API_KEY=your_google_gemini_api_key
-      ```
+or use the `Dockerfile` / `Procfile` directly on any container or PaaS host.
 
----
+## API
 
-## **License**
+| Method & path              | Description                                   |
+|----------------------------|-----------------------------------------------|
+| `GET  /api/health`         | Liveness probe                                |
+| `GET  /api/providers`      | List providers and key status                 |
+| `POST /api/iterate`        | Run the loop, return all steps                |
+| `POST /api/iterate/stream` | Run the loop, stream steps as SSE             |
+| `GET  /docs`               | Interactive Swagger UI                        |
 
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+```bash
+curl -X POST http://localhost:7860/api/iterate \
+  -H "Content-Type: application/json" \
+  -d '{"task":"Write a function that returns the average of a list","provider":"mock","max_iterations":3}'
+```
+
+Full reference: [docs/api_reference.md](docs/api_reference.md).
+
+## Architecture
+
+The deployable MVP is the self-contained **FastAPI app** in `app/`. A pluggable
+provider registry means adding a new vendor is a single small class. See
+[docs/architecture.md](docs/architecture.md) for the full picture.
+
+```
+app/
+├── main.py            # FastAPI: REST + SSE endpoints, serves the web UI
+├── orchestrator.py    # generate → critique → integrate loop
+├── providers/         # gemini · openai · anthropic · openrouter · groq · mock
+└── web/               # zero-build single-page frontend
+api/index.py           # Vercel serverless entry
+Dockerfile             # Hugging Face Spaces / any container host
+backend-go/            # optional Go orchestrator (polyglot local setup)
+integration-python/    # optional legacy Flask agent microservice
+core-rust/             # experimental Rust task-decomposition core
+```
+
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
