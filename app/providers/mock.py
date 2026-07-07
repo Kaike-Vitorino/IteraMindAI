@@ -39,15 +39,19 @@ class MockProvider(LLMProvider):
 
     @staticmethod
     def _infer_role(system: str) -> str:
+        # Match the explicit agent identity from the orchestrator prompts so the
+        # word "critic" inside the Integrator prompt does not misclassify it.
         s = system.lower()
-        if "critic" in s or "review" in s:
-            return "critic"
-        if "integrat" in s or "revise" in s or "apply" in s:
+        if "integrator agent" in s:
             return "integrator"
+        if "critic agent" in s:
+            return "critic"
         return "generator"
 
     def _render(self, role: str, user: str, seed: str) -> str:
-        snippet = textwrap.shorten(user.replace("\n", " ").strip(), width=140) or "the task"
+        # Strip backticks so an echoed code fence can't break rendering.
+        clean = user.replace("\n", " ").replace("`", "").strip()
+        snippet = textwrap.shorten(clean, width=140) or "the task"
         if role == "critic":
             return textwrap.dedent(
                 f"""
