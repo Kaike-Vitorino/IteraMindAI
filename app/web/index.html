@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IteraMindAI — Iterative Reasoning Engine</title>
+  <meta name="description" content="Multi-provider iterative reasoning: generate → critique → integrate, refined across rounds." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="aurora"></div>
+
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">◆</div>
+      <div>
+        <h1>IteraMind<span>AI</span></h1>
+        <p class="tagline">Iterative reasoning · generate → critique → integrate</p>
+      </div>
+    </div>
+    <nav>
+      <a href="/docs" target="_blank" rel="noopener">API Docs</a>
+      <a href="https://github.com/Kaike-Vitorino/IteraMindAI" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <!-- Control panel -->
+    <section class="panel controls">
+      <h2>Run</h2>
+      <form id="run-form">
+        <label class="field">
+          <span>Task</span>
+          <textarea id="task" rows="5" placeholder="e.g. Write a Python function that returns the average of a list, with edge-case handling."></textarea>
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span>Provider</span>
+            <select id="provider"></select>
+          </label>
+          <label class="field">
+            <span>Model <small>(optional)</small></span>
+            <input id="model" type="text" placeholder="default" />
+          </label>
+        </div>
+
+        <label class="field" id="key-field">
+          <span>API key <small>(optional · sent per-request, never stored)</small></span>
+          <input id="api-key" type="password" placeholder="uses server key if empty" autocomplete="off" />
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span>Iterations · <b id="iter-val">3</b></span>
+            <input id="iterations" type="range" min="1" max="8" value="3" />
+          </label>
+          <label class="field">
+            <span>Temperature · <b id="temp-val">0.7</b></span>
+            <input id="temperature" type="range" min="0" max="1.5" step="0.1" value="0.7" />
+          </label>
+        </div>
+
+        <button id="run-btn" type="submit">
+          <span class="btn-label">Run iterations</span>
+          <span class="spinner" hidden></span>
+        </button>
+        <p id="hint" class="hint"></p>
+      </form>
+    </section>
+
+    <!-- Results -->
+    <section class="panel results">
+      <div class="results-head">
+        <h2>Reasoning timeline</h2>
+        <span id="status" class="status idle">idle</span>
+      </div>
+      <div id="timeline" class="timeline">
+        <div class="empty">
+          <div class="empty-mark">◇</div>
+          <p>Run a task to watch the agents refine a solution round by round.</p>
+        </div>
+      </div>
+      <div id="final" class="final" hidden>
+        <h3>Final solution</h3>
+        <div id="final-body"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>IteraMindAI · multi-provider iterative reasoning</span>
+    <span>Gemini · OpenAI · Anthropic · OpenRouter · Groq · Mock</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
